@@ -1,51 +1,46 @@
 % Defining the vectors for N and phi
-N_values = [10, 20];                  % Example sample sizes
-phi_values = [0, pi/4];               % Example initial phases
+N_values = [10, 20];
+phi_values = [pi/8, pi/4];
 
-% Constant amplitude
-A = 1;                                % Amplitude is constant
+% Defining the other required parameteres
+A = 1;                                
+awgn_variance = 1;
+% It is assumed in the textbook that A^2 / sigma^2 = 1
 
-% Noise variance
-awgn_variance = 5;
 
 % Frequency range
-frequencies = :5:150;  % Example frequency range
+frequencies = -.2:.01:.2;
 
-% Preallocate the matrix for CRLB values
+% Preallocating the matrix for CRLB values
 crlb_values = zeros(length(frequencies), length(N_values), length(phi_values));
 
-% Loop over N, phi, and frequency
 for i = 1:length(N_values)
-    N = N_values(i);  % Set number of samples
+    N = N_values(i);
     for j = 1:length(phi_values)
-        phi = phi_values(j);  % Set phase
+        phi = phi_values(j);
         for k = 1:length(frequencies)
-            f0 = frequencies(k);  % Current frequency
+            f0 = frequencies(k);
             sum_term = 0;
             for n = 0:N-1
-                sum_term = sum_term + (2 * pi * n * sin(2 * pi * f0 * n + phi))^2;
+                sum_term = sum_term + (2*pi*n * sin(2*pi*f0*n + phi))^2;
             end
-            crlb = awgn_variance / (A^2 * sum_term);  % Calculate CRLB
-            crlb_values(k, i, j) = crlb;  % Store CRLB value
+            crlb = awgn_variance / (A^2 * sum_term);
+            crlb_values(k, i, j) = crlb;
         end
     end
 end
 
 % Plotting the CRLB vs frequency graph for different N and phi
 figure;
-hold on;
-colors = ['r', 'g', 'b', 'k'];  % Colors for different plots
+colors = ['r', 'g', 'b', 'k'];
 for i = 1:length(N_values)
     for j = 1:length(phi_values)
+        subplot(length(N_values), length(phi_values), (i-1)*length(phi_values) + j);
         plot(frequencies, crlb_values(:, i, j), 'Color', colors((i-1)*length(phi_values) + j), ...
-            'LineWidth', 2, 'DisplayName', sprintf('N=%d, \\phi=%.2f', N_values(i), phi_values(j)));
+            'LineWidth', 2);
+        xlabel('Frequency (Hz)');
+        ylabel('Cramer-Rao Lower Bound (CRLB)');
+        title(sprintf('N=%d, \\phi=%.2f', N_values(i), phi_values(j)));
+        grid on;
     end
 end
-hold off;
-
-% Labels and title
-xlabel('Frequency (Hz)');
-ylabel('Cramer-Rao Lower Bound (CRLB)');
-title('CRLB vs Frequency for Different N and \phi');
-legend('show');
-grid on;
